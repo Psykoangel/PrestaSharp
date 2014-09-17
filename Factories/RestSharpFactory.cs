@@ -83,6 +83,7 @@ namespace Bukimedia.PrestaSharp.Factories
             client.AddHandler("text/xml", new Bukimedia.PrestaSharp.Deserializers.PrestaSharpDeserializer());
             var response = client.Execute<T>(Request);
             if (response.StatusCode == HttpStatusCode.InternalServerError
+                || response.StatusCode == HttpStatusCode.ServiceUnavailable
                 || response.StatusCode == HttpStatusCode.BadRequest
                 || response.StatusCode == HttpStatusCode.Unauthorized
                 || response.StatusCode == HttpStatusCode.MethodNotAllowed
@@ -131,7 +132,8 @@ namespace Bukimedia.PrestaSharp.Factories
                 serialized += ((Serializers.PrestaSharpSerializer)request.XmlSerializer).PrestaSharpSerialize(Entity);
             }
             serialized = "<prestashop>\n" + serialized + "\n</prestashop>";
-            request.AddParameter("xml", serialized, ParameterType.RequestBody);
+            request.AddParameter("xml", serialized);
+            //request.AddParameter("text/xml", serialized, ParameterType.RequestBody);
             return request;
         }
 
