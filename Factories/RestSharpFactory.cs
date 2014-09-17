@@ -110,6 +110,28 @@ namespace Bukimedia.PrestaSharp.Factories
             return ids;
         }
 
+        protected byte[] ExecuteForImage(RestRequest Request)
+        {
+            var client = new RestClient();
+            client.BaseUrl = this.BaseUrl;
+            client.Authenticator = new HttpBasicAuthenticator(this.Account, this.Password);
+            Request.AddParameter("Account", this.Account, ParameterType.UrlSegment);
+            var response = client.Execute(Request);
+            if (response.StatusCode == HttpStatusCode.InternalServerError
+                || response.StatusCode == HttpStatusCode.ServiceUnavailable
+                || response.StatusCode == HttpStatusCode.BadRequest
+                || response.StatusCode == HttpStatusCode.Unauthorized
+                || response.StatusCode == HttpStatusCode.MethodNotAllowed
+                || response.StatusCode == HttpStatusCode.Forbidden
+                || response.StatusCode == HttpStatusCode.NotFound
+                || response.StatusCode == 0)
+            {
+                var Exception = new PrestaSharpException(response.Content, response.ErrorMessage, response.StatusCode, response.ErrorException);
+                throw Exception;
+            }
+            return response.RawBytes;
+        }
+
         protected RestRequest RequestForGet(string Resource, long? Id, string RootElement)
         {
             var request = new RestRequest();
@@ -290,6 +312,24 @@ namespace Bukimedia.PrestaSharp.Factories
             {
                 request.AddParameter("limit", Limit);
             }
+            return request;
+        }
+
+        protected RestRequest RequestForAddOrderHistory(string Resource, List<Entities.PrestaShopEntity> Entities)
+        {
+            var request = new RestRequest();
+            request.Resource = Resource;
+            request.Method = Method.POST;
+            request.RequestFormat = DataFormat.Xml;
+            request.XmlSerializer = new Serializers.PrestaSharpSerializer();
+            string serialized = "";
+            foreach (Entities.PrestaShopEntity Entity in Entities)
+            {
+                serialized += ((Serializers.PrestaSharpSerializer)request.XmlSerializer).PrestaSharpSerialize(Entity);
+            }
+            serialized = "<prestashop>\n" + serialized + "\n</prestashop>";
+            request.AddParameter("xml", serialized);
+            request.AddParameter("sendemail", 1);
             return request;
         }
 
