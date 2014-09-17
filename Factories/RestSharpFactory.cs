@@ -132,7 +132,8 @@ namespace Bukimedia.PrestaSharp.Factories
                 serialized += ((Serializers.PrestaSharpSerializer)request.XmlSerializer).PrestaSharpSerialize(Entity);
             }
             serialized = "<prestashop>\n" + serialized + "\n</prestashop>";
-            request.AddParameter("text/xml", serialized, ParameterType.RequestBody);
+            request.AddParameter("xml", serialized);
+            //request.AddParameter("text/xml", serialized, ParameterType.RequestBody);
             return request;
         }
 
